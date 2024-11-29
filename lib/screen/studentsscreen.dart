@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
-import 'package:tp70/entities/student.dart';
-import 'package:tp70/service/studentservice.dart';
-import 'package:tp70/template/navbar.dart';
 
+import '../service/studentservice.dart';
 import '../template/dialog/studentdialog.dart';
+import '../template/navbar.dart';
 
 class StudentScreen extends StatefulWidget {
   const StudentScreen({super.key});
@@ -24,9 +22,8 @@ class _StudentScreenState extends State<StudentScreen> {
   void initState() {
     super.initState();
     fetchClasses(); // Charge les classes dès le début
-    studentsFuture = getAllStudent(); // Charge tous les étudiants par défaut
+    studentsFuture = fetchStudentsByClass(selectedClass); // Charge les étudiants par classe
     selectedClass = "3";
-
   }
 
   // Récupère les classes depuis le service
@@ -56,8 +53,7 @@ class _StudentScreenState extends State<StudentScreen> {
               items: classes.map<DropdownMenuItem<String>>((classItem) {
                 return DropdownMenuItem<String>(
                   value: classItem['codClass'].toString(),
-                  child: Text(
-                      classItem['nomClass']), // Affiche le nom de la classe
+                  child: Text(classItem['nomClass']), // Affiche le nom de la classe
                 );
               }).toList(),
               onChanged: (value) {
@@ -82,75 +78,11 @@ class _StudentScreenState extends State<StudentScreen> {
                     padding: const EdgeInsets.all(8),
                     itemCount: snapshot.data.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return Slidable(
-                        key: Key((snapshot.data[index]['id']).toString()),
-                        startActionPane: ActionPane(
-                          motion: const ScrollMotion(),
-                          children: [
-                            SlidableAction(
-                              onPressed: (context) async {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AddStudentDialog(
-                                        notifyParent: refreshStudents,
-                                        student: Student(
-                                            snapshot.data[index]['dateNais'],
-                                            snapshot.data[index]['nom'],
-                                            snapshot.data[index]['prenom'],
-                                            snapshot.data[index]['id']),
-                                      );
-                                    });
-                              },
-                              backgroundColor: const Color(0xFF21B7CA),
-                              foregroundColor: Colors.white,
-                              icon: Icons.edit,
-                              label: 'Edit',
-                            ),
-                          ],
-                        ),
-                        endActionPane: ActionPane(
-                          motion: const ScrollMotion(),
-                          dismissible: DismissiblePane(onDismissed: () async {
-                            await deleteStudent(snapshot.data[index]['id']);
-                            setState(() {
-                              snapshot.data.removeAt(index);
-                            });
-                          }),
-                          children: [Container()],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 40,
-                              margin: const EdgeInsets.only(bottom: 30.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Text("Nom et Prénom : "),
-                                      Text(
-                                        snapshot.data[index]['nom'],
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(
-                                        width: 2.0,
-                                      ),
-                                      Text(snapshot.data[index]['prenom']),
-                                    ],
-                                  ),
-                                  Text(
-                                    'Date de Naissance :${DateFormat("dd-MM-yyyy").format(
-                                            DateTime.parse(snapshot.data[index]
-                                                ['dateNais']))}',
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
+                      return ListTile(
+                        title: Text(
+                            "${snapshot.data[index]['nom']} ${snapshot.data[index]['prenom']}"),
+                        subtitle: Text(
+                          "Date de Naissance: ${DateFormat("dd-MM-yyyy").format(DateTime.parse(snapshot.data[index]['dateNais']))}",
                         ),
                       );
                     },

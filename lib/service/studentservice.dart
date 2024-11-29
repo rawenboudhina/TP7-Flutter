@@ -68,3 +68,10 @@ Future<List<dynamic>> getAllClasses() async {
     throw Exception("Format de réponse incorrect pour les classes");
   }
 }
+
+
+
+
+
+
+
